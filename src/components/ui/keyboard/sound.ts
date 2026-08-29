@@ -1,4 +1,4 @@
-// Pure sound data — no imports needed.
+// Pure sound data - no imports needed.
 
 export const SOUND_DEFINES_DOWN: Record<string, [number, number]> = {
   Escape: [9069, 115],

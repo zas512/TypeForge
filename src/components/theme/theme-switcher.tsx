@@ -66,7 +66,7 @@ export function ThemeSwitcher({
   return (
     <div
       className={cn(
-        "relative isolate flex h-8 rounded-full border border-foreground/10 bg-foreground/[0.06] p-1",
+        "relative isolate flex h-8 rounded-full border border-foreground/10 bg-foreground/6 p-1",
         className
       )}
     >

@@ -13,8 +13,8 @@ export type InvalidReason =
   | "impossible_raw" // raw WPM above human ceiling (~350)
   | "impossible_cps" // chars-per-second exceeds physical limit
   | "impossible_burst" // a single second exceeds ~600 WPM (auto-typer spike)
-  | "flat_wpm_history" // all per-second WPMs are identical — bot pattern
-  | "perfect_consistency" // σ ≈ 0 at high WPM with enough data — bot pattern
+  | "flat_wpm_history" // all per-second WPMs are identical - bot pattern
+  | "perfect_consistency" // σ ≈ 0 at high WPM with enough data - bot pattern
   | "afk_detected"; // > 3 consecutive 0-raw seconds mid-test
 
 export interface ValidationResult {
@@ -27,7 +27,7 @@ export interface ValidationResult {
 // bursts but anything above these values is physically implausible.
 const MAX_WPM = 300;
 const MAX_RAW_WPM = 350;
-// 300 WPM ≈ 25 chars/sec; 350 raw ≈ 29 chars/sec — cap at 30 for safety
+// 300 WPM ≈ 25 chars/sec; 350 raw ≈ 29 chars/sec - cap at 30 for safety
 const MAX_CHARS_PER_SEC = 30;
 const MAX_BURST_WPM = 600;
 // Min test duration before we can draw conclusions
@@ -58,7 +58,7 @@ function hasPerfectConsistency(stats: ResultStats): boolean {
   ) {
     return false;
   }
-  // consistency = 100 − (σ/μ × 100). ≥ 99 means σ/μ ≤ 0.01 — inhuman steadiness.
+  // consistency = 100 − (σ/μ × 100). ≥ 99 means σ/μ ≤ 0.01 - inhuman steadiness.
   return stats.consistency >= 99;
 }
 
@@ -131,7 +131,7 @@ export function validateResult(stats: ResultStats): ValidationResult {
     return { valid: false, reason: "too_short" };
   }
 
-  // 5. Impossible speed — human ceiling
+  // 5. Impossible speed - human ceiling
   if (wpm > MAX_WPM) {
     return { valid: false, reason: "impossible_wpm" };
   }
@@ -148,7 +148,7 @@ export function validateResult(stats: ResultStats): ValidationResult {
 
   // 7. Per-second history checks (only when we have a history)
   if (wpmHistory.length > 0) {
-    // Single-second burst spike — hallmark of macro injection
+    // Single-second burst spike - hallmark of macro injection
     if (hasImpossibleBurst(wpmHistory)) {
       return { valid: false, reason: "impossible_burst" };
     }
@@ -175,7 +175,7 @@ export function validateResult(stats: ResultStats): ValidationResult {
   return { valid: true };
 }
 
-/** Convenience boolean wrapper — drop-in replacement for the old helper. */
+/** Convenience boolean wrapper - drop-in replacement for the old helper. */
 export function isInvalidTestResult(stats: ResultStats): boolean {
   return !validateResult(stats).valid;
 }

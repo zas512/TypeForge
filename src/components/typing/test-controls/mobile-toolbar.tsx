@@ -134,7 +134,7 @@ export function MobileToolbar({
             <DrawerTitle className="font-semibold text-foreground text-sm">
               Test Options
             </DrawerTitle>
-            <DrawerClose className="flex items-center justify-center rounded-full bg-foreground/[0.06] p-1.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground">
+            <DrawerClose className="flex items-center justify-center rounded-full bg-foreground/6 p-1.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground">
               <span className="sr-only">Close</span>
               <svg
                 fill="none"

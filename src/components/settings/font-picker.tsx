@@ -60,7 +60,7 @@ function FontGroup({
             <button
               className={cn(
                 "group/font flex w-full items-center justify-between rounded-lg px-3 py-2 text-left transition-colors duration-150",
-                selected ? "bg-foreground/[0.06]" : "hover:bg-foreground/[0.03]"
+                selected ? "bg-foreground/6" : "hover:bg-foreground/[0.03]"
               )}
               key={f.id}
               onClick={() => onSelect(f.id)}

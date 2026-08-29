@@ -1,11 +1,10 @@
 "use client";
-
-import { useCallback, useEffect, useState } from "react";
 import { useAppChrome } from "@/components/layout/app-chrome";
 import { useSettings } from "@/components/settings/settings-provider";
 import { TypingTest } from "@/components/typing/typing-test";
 import { Keyboard } from "@/components/ui/keyboard";
 import { cn } from "@/lib/utils";
+import { useCallback, useEffect, useState } from "react";
 
 export default function Page() {
   const { settingsOpen, setTypingActive, homeLogoHandlerRef } = useAppChrome();
@@ -28,12 +27,8 @@ export default function Page() {
     (active: boolean) => {
       setTypingActive(active);
     },
-    [setTypingActive]
+    [setTypingActive],
   );
-
-  const handleKeyHighlight = useCallback((_key: string | null) => {
-    /* no-op */
-  }, []);
 
   return (
     <div className="flex flex-1 flex-col">
@@ -42,14 +37,14 @@ export default function Page() {
           "flex flex-col px-6",
           isFinished
             ? "flex-1 justify-center px-10 py-2"
-            : "flex-1 items-center justify-center"
+            : "flex-1 items-center justify-center",
         )}
       >
         <TypingTest
           key={restartKey}
           onFinished={setIsFinished}
           onFocusChange={setTypingFocused}
-          onKeyHighlight={handleKeyHighlight}
+          onKeyHighlight={() => {}}
           onTypingActiveChange={handleTypingActiveChange}
           pauseTypingInputRefocus={settingsOpen}
         />
@@ -61,7 +56,7 @@ export default function Page() {
             "hidden items-center justify-center lg:flex",
             showKeyboard
               ? "flex-col pb-4"
-              : "invisible h-0 overflow-hidden border-0"
+              : "invisible h-0 overflow-hidden border-0",
           )}
         >
           <div className="scale-[0.85]">

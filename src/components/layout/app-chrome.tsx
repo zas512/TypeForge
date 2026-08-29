@@ -143,7 +143,7 @@ function SiteHeader() {
       transition={{ duration: 0.4, ease: "easeInOut" }}
     >
       <div className="relative flex w-full max-w-5xl items-center justify-between">
-        {/* Left — Logo */}
+        {/* Left - Logo */}
         <button
           className="flex cursor-pointer items-end gap-1 font-semibold text-primary text-xl tracking-tight"
           onClick={handleLogoClick}
@@ -152,7 +152,7 @@ function SiteHeader() {
           typeforge
           <TypeForgeLogo className="mb-1" size={17} />
         </button>
-        {/* Right — Audio, Settings, GitHub */}
+        {/* Right - Audio, Settings, GitHub */}
         <div className="flex items-center gap-2">
           {/* Audio toggle */}
           <motion.button
@@ -199,7 +199,7 @@ function SiteHeader() {
             </kbd>
           </motion.button>
 
-          {/* GitHub — primary pill */}
+          {/* GitHub - primary pill */}
           <motion.a
             className="flex items-center gap-2 rounded-full bg-foreground px-4 py-1.5 font-medium text-[13px] text-background"
             href="https://github.com/zas512/typeforge"

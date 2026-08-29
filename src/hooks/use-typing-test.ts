@@ -130,7 +130,7 @@ export function useTypingTest({
   const accuracy = accuracyFromCounts(mtCounts);
   correctCharsRef.current = wpmNumerator;
 
-  // Rule 1: derive realtime WPM inline — re-computed on every render triggered
+  // Rule 1: derive realtime WPM inline - re-computed on every render triggered
   // by a keystroke (typed changes → re-render), no useEffect needed.
   const wpm =
     started && startTime && !finished
@@ -272,7 +272,7 @@ export function useTypingTest({
     [resetTestWith]
   );
 
-  // One-time mount — read persisted options and build the first word set.
+  // One-time mount - read persisted options and build the first word set.
   useEffect(() => {
     const storedMode = readStoredTestMode();
     const storedTime = readStoredTimeOption();

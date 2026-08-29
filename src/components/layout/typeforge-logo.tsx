@@ -25,7 +25,7 @@ export function TypeForgeLogo({
         x="1"
         y="3"
       />
-      {/* Housing plate — neutral border color, distinct from keycaps */}
+      {/* Housing plate - neutral border color, distinct from keycaps */}
       <rect
         height="28"
         rx="5"

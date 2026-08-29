@@ -181,7 +181,7 @@ function SubDrawerHeader({ title }: { title: string }) {
       <DrawerTitle className="font-semibold text-foreground text-sm">
         {title}
       </DrawerTitle>
-      <DrawerClose className="flex items-center justify-center rounded-full bg-foreground/[0.06] p-1.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground">
+      <DrawerClose className="flex items-center justify-center rounded-full bg-foreground/6 p-1.5 text-muted-foreground transition-colors hover:bg-foreground/10 hover:text-foreground">
         <X size={14} />
         <span className="sr-only">Close</span>
       </DrawerClose>

@@ -9,19 +9,19 @@ import "./globals.css";
 
 const spaceGrotesk = Space_Grotesk({
   subsets: ["latin"],
-  variable: "--font-sans"
+  variable: "--font-sans",
 });
 
 const fontMono = Geist_Mono({
   subsets: ["latin"],
-  variable: "--font-mono"
+  variable: "--font-mono",
 });
 
 export const metadata: Metadata = {
   title: {
     default:
-      "TypeForge — Free Typing Test with Keyboard Sounds | WPM & Accuracy",
-    template: "%s | TypeForge"
+      "TypeForge - Free Typing Test with Keyboard Sounds | WPM & Accuracy",
+    template: "%s | TypeForge",
   },
   description: siteConfig.description,
   keywords: [
@@ -41,20 +41,20 @@ export const metadata: Metadata = {
     "keyboard sound test",
     "typing sound",
     "monkeytype alternative",
-    "TypeForge"
+    "TypeForge",
   ],
   authors: [{ name: siteConfig.creator, url: siteConfig.creatorUrl }],
   creator: siteConfig.creator,
   publisher: siteConfig.creator,
   metadataBase: new URL(siteConfig.url),
   alternates: {
-    canonical: "/"
+    canonical: "/",
   },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteConfig.url,
-    title: "TypeForge — Free Typing Test with Keyboard Sounds | WPM & Accuracy",
+    title: "TypeForge - Free Typing Test with Keyboard Sounds | WPM & Accuracy",
     description: siteConfig.description,
     siteName: siteConfig.name,
     images: [
@@ -62,16 +62,16 @@ export const metadata: Metadata = {
         url: "/og.jpeg",
         width: 1500,
         height: 1016,
-        alt: "TypeForge — typing test with keyboard sounds, on-screen keyboard, and real-time WPM tracking"
-      }
-    ]
+        alt: "TypeForge - typing test with keyboard sounds, on-screen keyboard, and real-time WPM tracking",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "TypeForge — Typing Test with Keyboard Sounds",
+    title: "TypeForge - Typing Test with Keyboard Sounds",
     description:
       "A satisfying typing test with realistic mechanical keyboard sounds. Track your WPM and accuracy in real-time.",
-    images: ["/og.jpeg"]
+    images: ["/og.jpeg"],
   },
   robots: {
     index: true,
@@ -81,10 +81,10 @@ export const metadata: Metadata = {
       follow: true,
       "max-image-preview": "large",
       "max-snippet": -1,
-      "max-video-preview": -1
-    }
+      "max-video-preview": -1,
+    },
   },
-  category: "technology"
+  category: "technology",
 };
 
 const jsonLd = {
@@ -98,17 +98,17 @@ const jsonLd = {
   offers: {
     "@type": "Offer",
     price: "0",
-    priceCurrency: "USD"
+    priceCurrency: "USD",
   },
   author: {
     "@type": "Person",
     name: siteConfig.creator,
-    url: siteConfig.creatorUrl
-  }
+    url: siteConfig.creatorUrl,
+  },
 };
 
 export default function RootLayout({
-  children
+  children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
@@ -118,7 +118,7 @@ export default function RootLayout({
         "antialiased",
         fontMono.variable,
         "font-sans",
-        spaceGrotesk.variable
+        spaceGrotesk.variable,
       )}
       lang="en"
       suppressHydrationWarning
@@ -133,7 +133,7 @@ export default function RootLayout({
         />
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var a=localStorage.getItem("tc-accent");if(a)document.documentElement.setAttribute("data-accent",a)}catch(e){}})()`
+            __html: `(function(){try{var a=localStorage.getItem("tc-accent");if(a)document.documentElement.setAttribute("data-accent",a)}catch(e){}})()`,
           }}
         />
         <script

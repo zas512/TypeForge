@@ -1,6 +1,6 @@
 <a name="readme-top"></a>
 
-<img width="1440" alt="TypeForge — typing test with mechanical keyboard sounds" src=".github/images/img_main.png" />
+<img width="1440" alt="TypeForge - typing test with mechanical keyboard sounds" src=".github/images/img_main.png" />
 
 <p align="center">
   <h3 align="center">TypeForge</h3>
@@ -62,7 +62,7 @@
 
 ## About
 
-**TypeForge** is a free online typing test with **realistic mechanical keyboard sounds** and real-time WPM tracking. Practice with timed tests, word counts, quotes, or zen mode — featuring an interactive on-screen keyboard, satisfying key sounds, and detailed accuracy stats.
+**TypeForge** is a free online typing test with **realistic mechanical keyboard sounds** and real-time WPM tracking. Practice with timed tests, word counts, quotes, or zen mode - featuring an interactive on-screen keyboard, satisfying key sounds, and detailed accuracy stats.
 
 ## ✨ Features
 
@@ -72,8 +72,8 @@
 | **Mechanical key sounds** | Realistic per-key audio feedback via Web Audio; multiple keyboard themes |
 | **Virtual keyboard** | Interactive on-screen keyboard that highlights keys as you type (desktop) |
 | **Results** | WPM, raw speed, accuracy, character breakdown, consistency, elapsed time, WPM-over-time chart |
-| **Keyboard themes** | 6 color schemes — Classic, Mint, Royal, Dolch, Sand, Scarlet — each tints the entire UI |
-| **Typing fonts** | 9 fonts — Geist Mono, JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro, Inter Tight, Space Grotesk, Nunito, Atkinson Hyperlegible |
+| **Keyboard themes** | 6 color schemes - Classic, Mint, Royal, Dolch, Sand, Scarlet - each tints the entire UI |
+| **Typing fonts** | 9 fonts - Geist Mono, JetBrains Mono, Fira Code, IBM Plex Mono, Source Code Pro, Inter Tight, Space Grotesk, Nunito, Atkinson Hyperlegible |
 | **Settings** | Theme (light/dark/system), accent color, font picker, show keyboard, sound volume, live WPM, ghost mode |
 | **Haptics** | Optional vibration on supported hardware |
 

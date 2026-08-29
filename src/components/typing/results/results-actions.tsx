@@ -10,7 +10,7 @@ import {
 import type { ResultStats, WpmSnapshot } from "@/lib/types";
 
 export const actionBtnClass =
-  "flex items-center gap-2 rounded-lg px-4 py-2 text-xs text-muted-foreground transition-colors hover:bg-foreground/[0.06] hover:text-foreground focus-visible:ring-0 focus-visible:outline-none";
+  "flex items-center gap-2 rounded-lg px-4 py-2 text-xs text-muted-foreground transition-colors hover:bg-foreground/6 hover:text-foreground focus-visible:ring-0 focus-visible:outline-none";
 
 export function ResultsActionButton({
   onClick,
@@ -130,19 +130,19 @@ export function CalculationFormulaPopover() {
             formula="(correct chars + spaces) / 5 / minutes"
             label="WPM"
           />
-          <div className="h-px bg-foreground/[0.06]" />
+          <div className="h-px bg-foreground/6" />
           <FormulaItem
             description="Every keystroke counts regardless of accuracy. Measures raw typing speed before error correction."
             formula="total keystrokes / 5 / minutes"
             label="Raw"
           />
-          <div className="h-px bg-foreground/[0.06]" />
+          <div className="h-px bg-foreground/6" />
           <FormulaItem
             description="Character-level accuracy. Extra characters beyond the target word count as incorrect."
             formula="correct / (correct + incorrect) x 100"
             label="Accuracy"
           />
-          <div className="h-px bg-foreground/[0.06]" />
+          <div className="h-px bg-foreground/6" />
           <FormulaItem
             description="Measures how steady your speed was. σ is standard deviation, μ is mean of per-second WPM. 100% means perfectly even pacing."
             formula="100 - (σ / μ x 100)"

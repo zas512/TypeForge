@@ -142,12 +142,12 @@
 
 /* ── Keyboard-theme colour schemes ───────────────────────────── */
 /* Three channels per theme from keyboard palette:
-   --primary / --ring  → accent keys (escape, enter) — buttons, cursor, active states
-   --kb-dark           → modifier keys — muted surfaces, secondary tones
-   --kb-light          → letter keys — body background tint, page atmosphere
+   --primary / --ring  → accent keys (escape, enter) - buttons, cursor, active states
+   --kb-dark           → modifier keys - muted surfaces, secondary tones
+   --kb-light          → letter keys - body background tint, page atmosphere
    --muted-foreground  → text readability tuned per theme */
 
-/* classic — light:#F5F5F5 dark:#737373 accent:#F57644 */
+/* classic - light:#F5F5F5 dark:#737373 accent:#F57644 */
 :root[data-accent="classic"] {
   --primary: oklch(0.63 0.19 42);
   --ring: oklch(0.63 0.19 42);
@@ -163,7 +163,7 @@
   --muted: color-mix(in oklch, var(--kb-dark) 40%, oklch(0.274 0.006 286));
 }
 
-/* mint — light:#EEEEEE dark:#447B82 accent:#86C8AC */
+/* mint - light:#EEEEEE dark:#447B82 accent:#86C8AC */
 :root[data-accent="mint"] {
   --primary: oklch(0.58 0.14 175);
   --ring: oklch(0.58 0.14 175);
@@ -179,7 +179,7 @@
   --muted: color-mix(in oklch, var(--kb-dark) 30%, oklch(0.274 0.006 286));
 }
 
-/* royal — light:#324974 dark:#3A3B35 accent:#E4D440 (gold!) */
+/* royal - light:#324974 dark:#3A3B35 accent:#E4D440 (gold!) */
 :root[data-accent="royal"] {
   --primary: oklch(0.55 0.14 85);
   --ring: oklch(0.55 0.14 85);
@@ -195,7 +195,7 @@
   --muted: color-mix(in oklch, var(--kb-dark) 30%, oklch(0.274 0.006 286));
 }
 
-/* dolch — light:#4F5E78 dark:#3E3B4C accent:#D73E42 (red!) */
+/* dolch - light:#4F5E78 dark:#3E3B4C accent:#D73E42 (red!) */
 :root[data-accent="dolch"] {
   --primary: oklch(0.57 0.2 25);
   --ring: oklch(0.57 0.2 25);
@@ -211,7 +211,7 @@
   --muted: color-mix(in oklch, var(--kb-dark) 30%, oklch(0.274 0.006 286));
 }
 
-/* sand — light:#EFEFEF dark:#893D36 accent:#C94E41 */
+/* sand - light:#EFEFEF dark:#893D36 accent:#C94E41 */
 :root[data-accent="sand"] {
   --primary: oklch(0.58 0.17 28);
   --ring: oklch(0.58 0.17 28);
@@ -227,7 +227,7 @@
   --muted: color-mix(in oklch, var(--kb-dark) 40%, oklch(0.274 0.006 286));
 }
 
-/* scarlet — light:#E4D7D7 dark:#D5868A accent:#E1E1E1 */
+/* scarlet - light:#E4D7D7 dark:#D5868A accent:#E1E1E1 */
 :root[data-accent="scarlet"] {
   --primary: oklch(0.58 0.16 350);
   --ring: oklch(0.58 0.16 350);

@@ -21,13 +21,13 @@ export function ThemeGrid({
             className={cn(
               "group relative flex flex-col gap-2.5 rounded-xl px-3 py-3 text-left transition-all duration-150",
               selected
-                ? "bg-foreground/[0.06] ring-1 ring-foreground/10"
+                ? "bg-foreground/6 ring-1 ring-foreground/10"
                 : "hover:bg-foreground/[0.04]"
             )}
             key={t.id}
             onClick={() => onSelect(t.id)}
           >
-            {/* Palette strip — 3 colors */}
+            {/* Palette strip - 3 colors */}
             <div className="flex h-6 w-full overflow-hidden rounded-lg ring-1 ring-black/5">
               <span
                 className="flex-1"

@@ -401,7 +401,7 @@ function Key({ width = 50, children, className, keyCode }: KeyProps) {
     >
       <div
         className={cn(
-          "relative flex h-[50px] items-start justify-center overflow-hidden rounded-[4px] rounded-t-[12px] border border-black/40 transition-all duration-100",
+          "relative flex h-[50px] items-start justify-center overflow-hidden rounded-lg rounded-t-[12px] border border-black/40 transition-all duration-100",
           visuallyPressed && "h-[45px]"
         )}
         style={{

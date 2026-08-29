@@ -1,14 +1,13 @@
 "use client";
-
-import { ArrowCounterClockwise, Cursor } from "@phosphor-icons/react";
-import { AnimatePresence, LayoutGroup, motion } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useSettings } from "@/components/settings/settings-provider";
 import { ResultsScreen } from "@/components/typing/results";
 import { TestControls } from "@/components/typing/test-controls";
 import { WordItem } from "@/components/typing/word-item";
 import { useTypingTest } from "@/hooks/use-typing-test";
 import { cn } from "@/lib/utils";
+import { ArrowCounterClockwise, Cursor } from "@phosphor-icons/react";
+import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface TypingTestProps {
   onFinished?: (finished: boolean) => void;
@@ -18,7 +17,6 @@ interface TypingTestProps {
   pauseTypingInputRefocus?: boolean;
 }
 
-// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: orchestrator component
 export function TypingTest(props: TypingTestProps) {
   const { liveStats, faahMode, ghostMode } = useSettings();
   const faahAudioRef = useRef<HTMLAudioElement | null>(null);
@@ -31,7 +29,6 @@ export function TypingTest(props: TypingTestProps) {
       faahAudioRef.current = new Audio("/sounds/fahhhhh.mp3");
     }
     faahAudioRef.current.currentTime = 0;
-    // biome-ignore lint/complexity/noVoid: fire-and-forget promise
     void faahAudioRef.current.play();
   }, [faahMode]);
 
@@ -116,9 +113,6 @@ export function TypingTest(props: TypingTestProps) {
   }
 
   return (
-    // biome-ignore lint/a11y/useKeyWithClickEvents: keyboard focus handled via global keydown listener
-    // biome-ignore lint/a11y/noStaticElementInteractions: intentional click-to-focus area
-    // biome-ignore lint/a11y/noNoninteractiveElementInteractions: intentional click-to-focus area
     <div
       className="flex w-full max-w-5xl flex-col items-center gap-3 transition-all duration-150 ease-out"
       onClick={handleFocus}
@@ -128,7 +122,6 @@ export function TypingTest(props: TypingTestProps) {
         filter: screenFade < 1 ? "blur(4px)" : "none",
       }}
     >
-      {/* Controls toolbar */}
       <TestControls
         controlsVisible={controlsVisible}
         difficulty={difficulty}
@@ -161,7 +154,7 @@ export function TypingTest(props: TypingTestProps) {
           <div
             className={cn(
               "flex items-baseline gap-6 transition-opacity duration-200",
-              started ? "opacity-100" : "opacity-0"
+              started ? "opacity-100" : "opacity-0",
             )}
           >
             {/* Timer / progress */}
@@ -184,7 +177,7 @@ export function TypingTest(props: TypingTestProps) {
               </span>
             )}
 
-            {/* WPM + Accuracy — gated by liveStats setting */}
+            {/* WPM + Accuracy - gated by liveStats setting */}
             {liveStats && (
               <>
                 <span className="tabular-nums">
@@ -209,7 +202,7 @@ export function TypingTest(props: TypingTestProps) {
         <div
           className={cn(
             "relative h-[7.8rem] w-full overflow-hidden text-2xl leading-relaxed",
-            isActivelyTyping && "is-typing"
+            isActivelyTyping && "is-typing",
           )}
           ref={wordsContainerRef}
           style={{ fontFamily: "var(--typing-font)" }}
@@ -322,22 +315,22 @@ export function TypingTest(props: TypingTestProps) {
       >
         {mode === "zen" && started ? (
           <>
-            <kbd className="rounded-[4px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <kbd className="rounded-lg bg-foreground/6 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               shift
             </kbd>
             <span className="text-muted-foreground/30">+</span>
-            <kbd className="rounded-[4px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <kbd className="rounded-lg bg-foreground/6 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               enter
             </kbd>
             <span className="ml-0.5">end test</span>
           </>
         ) : (
           <>
-            <kbd className="rounded-[4px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <kbd className="rounded-lg bg-foreground/6 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               tab
             </kbd>
             <span className="text-muted-foreground/30">+</span>
-            <kbd className="rounded-[4px] bg-foreground/[0.06] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+            <kbd className="rounded-lg bg-foreground/6 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
               enter
             </kbd>
             <span className="ml-0.5">restart</span>
@@ -368,7 +361,7 @@ function RestartButton({
       animate={{ opacity: controlsVisible ? 1 : 0.15 }}
       className={cn(
         "rounded-lg p-2 text-muted-foreground transition-colors hover:text-foreground",
-        !controlsVisible && "pointer-events-none"
+        !controlsVisible && "pointer-events-none",
       )}
       onClick={handleClick}
       title="Restart test"

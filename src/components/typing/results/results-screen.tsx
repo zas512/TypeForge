@@ -124,7 +124,7 @@ export function ResultsScreen({
         />
       )}
 
-      {/* ── Hero: WPM + Accuracy — the star moment ── */}
+      {/* ── Hero: WPM + Accuracy - the star moment ── */}
       <div className="flex items-end justify-center gap-5 pt-2 sm:gap-8 md:gap-12">
         {/* WPM */}
         <div className="flex flex-col items-center gap-1">
@@ -170,7 +170,7 @@ export function ResultsScreen({
         </div>
       </div>
 
-      {/* Personal best badge — springs in with overshoot */}
+      {/* Personal best badge - springs in with overshoot */}
       {pb?.isNewPb && (
         <motion.div
           animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
@@ -192,7 +192,7 @@ export function ResultsScreen({
         </motion.div>
       )}
 
-      {/* ── Key stats — each cascades in individually ── */}
+      {/* ── Key stats - each cascades in individually ── */}
       <div className="flex items-center justify-center gap-8 md:gap-12">
         <motion.div
           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
@@ -241,7 +241,7 @@ export function ResultsScreen({
         )}
       </div>
 
-      {/* ── Chart — clips open from top ── */}
+      {/* ── Chart - clips open from top ── */}
       <motion.div
         animate={{ opacity: 1, clipPath: "inset(0% 0% 0% 0%)" }}
         className="h-[180px] w-full md:h-[200px]"
@@ -257,7 +257,7 @@ export function ResultsScreen({
         )}
       </motion.div>
 
-      {/* ── Divider — draws from center ── */}
+      {/* ── Divider - draws from center ── */}
       <motion.div
         animate={{ scaleX: 1, opacity: 1 }}
         className="mx-auto h-px w-full max-w-5xl bg-border/50"
@@ -282,7 +282,7 @@ export function ResultsScreen({
         <DetailStat accent label="test" value={`${mode} ${modeDetail}`} />
       </motion.div>
 
-      {/* ── Actions — spring up individually ── */}
+      {/* ── Actions - spring up individually ── */}
       <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 pb-2">
         {[
           <ResultsActionButton
