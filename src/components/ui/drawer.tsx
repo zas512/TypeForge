@@ -187,24 +187,6 @@ function DrawerTitle({ className, ...props }: DrawerPrimitive.Title.Props) {
   );
 }
 
-function DrawerDescription({
-  className,
-  ...props
-}: DrawerPrimitive.Description.Props) {
-  return (
-    <DrawerPrimitive.Description
-      className={(state) =>
-        cn(
-          "mt-1.5 text-muted-foreground text-sm",
-          resolveClassName(className, state)
-        )
-      }
-      data-slot="drawer-description"
-      {...props}
-    />
-  );
-}
-
 function DrawerBackdrop({
   className,
   ...props
@@ -228,7 +210,6 @@ export {
   DrawerBackdrop,
   DrawerClose,
   DrawerContent,
-  DrawerDescription,
   DrawerHandle,
   DrawerPopup,
   DrawerPortal,

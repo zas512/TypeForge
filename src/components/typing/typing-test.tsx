@@ -60,6 +60,7 @@ export function TypingTest(props: TypingTestProps) {
     wordsContainerRef,
     activeWordRef,
     handleKeyDown,
+    handleInputChange,
     handleFocus,
     handleInputBlur,
     handleInputFocus,
@@ -212,11 +213,9 @@ export function TypingTest(props: TypingTestProps) {
             autoComplete="off"
             autoCorrect="off"
             autoFocus
-            className="absolute opacity-0"
+            className="absolute left-0 top-0 h-px w-px opacity-0 pointer-events-none z-[-1]"
             onBlur={handleInputBlur}
-            onChange={() => {
-              /* controlled input */
-            }}
+            onChange={handleInputChange}
             onFocus={handleInputFocus}
             onKeyDown={handleKeyDown}
             ref={inputRef}

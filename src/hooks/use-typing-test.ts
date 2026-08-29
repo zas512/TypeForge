@@ -1,6 +1,4 @@
 "use client";
-
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { fetchLanguageWords } from "@/lib/languages";
 import { getQuote, type QuoteLength } from "@/lib/quotes";
 import {
@@ -32,6 +30,7 @@ import {
   countWpm,
   wpmNumeratorFromCounts,
 } from "@/lib/wpm-count";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 type ResetOverrides = Partial<{
   mode: TestMode;
@@ -61,9 +60,10 @@ export function useTypingTest({
   pauseTypingInputRefocus = false,
 }: UseTypingTestProps) {
   const pauseRefocusRef = useRef(false);
-  pauseRefocusRef.current = pauseTypingInputRefocus;
+  useEffect(() => {
+    pauseRefocusRef.current = pauseTypingInputRefocus;
+  }, [pauseTypingInputRefocus]);
 
-  // ── Options state ────────────────────────────────────────────────────────
   const [mode, setMode] = useState<TestMode>("time");
   const [timeOption, setTimeOption] = useState<TimeOption>(30);
   const [wordOption, setWordOption] = useState<WordOption>(25);
@@ -73,13 +73,11 @@ export function useTypingTest({
   const [numbers, setNumbers] = useState(false);
   const [difficulty, setDifficulty] = useState<Difficulty | undefined>("easy");
 
-  // Word pool cache (kept in a ref so it survives re-renders)
   const wordPoolRef = useRef<{
     hard: boolean;
     words: string[];
   } | null>(null);
 
-  // ── Test state ───────────────────────────────────────────────────────────
   const [words, setWords] = useState<string[]>([]);
   const [typed, setTyped] = useState("");
   const [wordIndex, setWordIndex] = useState(0);
@@ -95,8 +93,8 @@ export function useTypingTest({
   const [resetting, setResetting] = useState(false);
   const [isActivelyTyping, setIsActivelyTyping] = useState(false);
   const [screenFade, setScreenFade] = useState(1);
-
-  // ── Refs ─────────────────────────────────────────────────────────────────
+  const [wpm, setWpm] = useState(0);
+  const [frozenStats, setFrozenStats] = useState<ResultStats | null>(null);
   const correctCharsRef = useRef(0);
   const allTypedRef = useRef(0);
   const errorsThisSecondRef = useRef(0);
@@ -113,7 +111,6 @@ export function useTypingTest({
   const resetAnimRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const finishTestRef = useRef<(() => void) | null>(null);
 
-  // ── Derived ──────────────────────────────────────────────────────────────
   const mtCounts = useMemo(
     () =>
       countWpm({
@@ -124,41 +121,104 @@ export function useTypingTest({
         mode,
         final: finished,
       }),
-    [words, wordInputs, typed, wordIndex, mode, finished]
+    [words, wordInputs, typed, wordIndex, mode, finished],
   );
   const wpmNumerator = wpmNumeratorFromCounts(mtCounts);
   const accuracy = accuracyFromCounts(mtCounts);
-  correctCharsRef.current = wpmNumerator;
+  useEffect(() => {
+    correctCharsRef.current = wpmNumerator;
+  }, [wpmNumerator]);
 
-  // Rule 1: derive realtime WPM inline - re-computed on every render triggered
-  // by a keystroke (typed changes → re-render), no useEffect needed.
-  const wpm =
-    started && startTime && !finished
-      ? Math.round(
-          wpmNumerator /
-            5 /
-            Math.max((Date.now() - startTime) / 1000 / 60, 1 / 60)
-        )
-      : 0;
+  const finishTest = useCallback(
+    (finalInputs?: string[], finalTyped?: string) => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      setFinished(true);
+      setShowControls(true);
+      onFinished?.(true);
+      onTypingActiveChange?.(false);
+      setScreenFade(0);
+      requestAnimationFrame(() => setScreenFade(1));
 
-  // ── finishTest ───────────────────────────────────────────────────────────
-  // Rule 3: all finish-related side effects run here, not in reactive effects.
-  const finishTest = useCallback(() => {
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setFinished(true);
-    setShowControls(true);
-    onFinished?.(true);
-    onTypingActiveChange?.(false);
-    setScreenFade(0);
-    requestAnimationFrame(() => setScreenFade(1));
-  }, [onFinished, onTypingActiveChange]);
+      const activeInputs = finalInputs ?? wordInputs;
+      const activeTyped = finalTyped ?? typed;
+      const activeIndex = finalInputs ? finalInputs.length - 1 : wordIndex;
 
-  finishTestRef.current = finishTest;
+      const elapsed = startTime
+        ? (Date.now() - startTime) / 1000
+        : elapsedSecondsRef.current;
+      const elapsedMin = elapsed / 60 || 1 / 60;
+      const wpmValues = wpmHistory.map((s) => s.wpm).filter((v) => v > 0);
+      let consistency = 100;
+      if (wpmValues.length > 1) {
+        const mean = wpmValues.reduce((a, b) => a + b, 0) / wpmValues.length;
+        const variance =
+          wpmValues.reduce((a, b) => a + (b - mean) ** 2, 0) / wpmValues.length;
+        consistency = Math.max(
+          0,
+          Math.round(100 - (Math.sqrt(variance) / (mean || 1)) * 100),
+        );
+      }
+      const counts = countWpm({
+        targetWords: words,
+        wordInputs: activeInputs,
+        typed: activeTyped,
+        wordIndex: activeIndex,
+        mode,
+        final: true,
+      });
+      const computedWpm = Math.round(
+        wpmNumeratorFromCounts(counts) / 5 / elapsedMin,
+      );
+      const computedRaw = Math.max(
+        Math.round(allTypedRef.current / 5 / elapsedMin),
+        computedWpm,
+      );
+      setFrozenStats({
+        wpm: computedWpm,
+        accuracy: accuracyFromCounts(counts),
+        raw: computedRaw,
+        correctChars: counts.correctWordChars,
+        incorrectChars: counts.incorrectChars,
+        extraChars: counts.extraChars,
+        missedChars: counts.missedChars,
+        consistency,
+        elapsedSeconds: Math.round(elapsed),
+        correctedErrors: correctedErrorsRef.current,
+        mode,
+        modeDetail:
+          mode === "time"
+            ? String(timeOption)
+            : mode === "words"
+              ? String(wordOption)
+              : mode === "quote"
+                ? quoteLength
+                : "",
+        wpmHistory,
+      });
+    },
+    [
+      onFinished,
+      onTypingActiveChange,
+      wordInputs,
+      typed,
+      wordIndex,
+      startTime,
+      wpmHistory,
+      words,
+      mode,
+      timeOption,
+      wordOption,
+      quoteLength,
+    ],
+  );
 
-  // ── buildWords: generate words from English pool or fallback ──────────
+  useEffect(() => {
+    finishTestRef.current = finishTest;
+  }, [finishTest]);
+
   const buildWords = useCallback(
     async (
       count: number,
@@ -166,10 +226,9 @@ export function useTypingTest({
         punctuation: boolean;
         numbers: boolean;
         difficulty: Difficulty | undefined;
-      }
+      },
     ): Promise<string[]> => {
       const isHard = opts.difficulty === "hard";
-      // Use cached pool if same difficulty tier
       if (wordPoolRef.current && wordPoolRef.current.hard === isHard) {
         return generateWordsFromPool(wordPoolRef.current.words, count, opts);
       }
@@ -178,15 +237,11 @@ export function useTypingTest({
         wordPoolRef.current = { hard: isHard, words: pool };
         return generateWordsFromPool(pool, count, opts);
       }
-      // Fallback to random-words if fetch fails
       return generateWords(count, opts);
     },
-    []
+    [],
   );
 
-  // ── resetTestWith ────────────────────────────────────────────────────────
-  // Rule 3: accepts explicit overrides so option-change handlers can reset
-  // immediately with the new value without waiting for state to commit.
   const resetTestWith = useCallback(
     async (overrides: ResetOverrides = {}) => {
       const m = overrides.mode ?? mode;
@@ -248,12 +303,12 @@ export function useTypingTest({
       buildWords,
       onFinished,
       onTypingActiveChange,
-    ]
+    ],
   );
 
   const resetTestImmediate = useCallback(
     () => resetTestWith(),
-    [resetTestWith]
+    [resetTestWith],
   );
 
   const resetTest = useCallback(
@@ -269,10 +324,9 @@ export function useTypingTest({
         });
       }, 150);
     },
-    [resetTestWith]
+    [resetTestWith],
   );
 
-  // One-time mount - read persisted options and build the first word set.
   useEffect(() => {
     const storedMode = readStoredTestMode();
     const storedTime = readStoredTimeOption();
@@ -281,7 +335,6 @@ export function useTypingTest({
     const storedPunctuation = readStoredBool(PUNCTUATION_STORAGE_KEY);
     const storedNumbers = readStoredBool(NUMBERS_STORAGE_KEY);
     const storedDifficulty = readStoredDifficulty();
-
     const m = storedMode ?? mode;
     const to = storedTime ?? timeOption;
     const wo = storedWordOption ?? wordOption;
@@ -290,48 +343,49 @@ export function useTypingTest({
     const n = storedNumbers ?? numbers;
     const d = storedDifficulty === undefined ? difficulty : storedDifficulty;
 
-    if (storedMode !== undefined) {
-      setMode(storedMode);
-    }
-    if (storedTime !== undefined) {
-      setTimeOption(storedTime);
-    }
-    if (storedWordOption !== undefined) {
-      setWordOption(storedWordOption);
-    }
-    if (storedQuoteLength !== undefined) {
-      setQuoteLength(storedQuoteLength);
-    }
-    if (storedPunctuation !== undefined) {
-      setPunctuation(storedPunctuation);
-    }
-    if (storedNumbers !== undefined) {
-      setNumbers(storedNumbers);
-    }
-    if (storedDifficulty !== undefined) {
-      setDifficulty(storedDifficulty);
-    }
+    setTimeout(() => {
+      if (storedMode !== undefined) {
+        setMode(storedMode);
+      }
+      if (storedTime !== undefined) {
+        setTimeOption(storedTime);
+      }
+      if (storedWordOption !== undefined) {
+        setWordOption(storedWordOption);
+      }
+      if (storedQuoteLength !== undefined) {
+        setQuoteLength(storedQuoteLength);
+      }
+      if (storedPunctuation !== undefined) {
+        setPunctuation(storedPunctuation);
+      }
+      if (storedNumbers !== undefined) {
+        setNumbers(storedNumbers);
+      }
+      if (storedDifficulty !== undefined) {
+        setDifficulty(storedDifficulty);
+      }
 
-    const wc = m === "time" ? 200 : m === "words" ? wo : 100;
-    if (m === "quote") {
-      const { words: initWords, author } = getQuote(ql);
-      setWords(initWords);
-      setQuoteAuthor(author);
-    } else {
-      buildWords(wc, {
-        punctuation: p,
-        numbers: n,
-        difficulty: d,
-      }).then((w) => setWords(w));
-    }
-    if (m === "time") {
-      setTimeLeft(to);
-    }
-    inputRef.current?.focus();
+      const wc = m === "time" ? 200 : m === "words" ? wo : 100;
+      if (m === "quote") {
+        const { words: initWords, author } = getQuote(ql);
+        setWords(initWords);
+        setQuoteAuthor(author);
+      } else {
+        buildWords(wc, {
+          punctuation: p,
+          numbers: n,
+          difficulty: d,
+        }).then((w) => setWords(w));
+      }
+      if (m === "time") {
+        setTimeLeft(to);
+      }
+      inputRef.current?.focus();
+    }, 0);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Helper callbacks ─────────────────────────────────────────────────────
   const markTypingActive = useCallback(() => {
     setIsActivelyTyping(true);
     if (typingIdleRef.current) {
@@ -355,7 +409,7 @@ export function useTypingTest({
     (
       snapshotWordInputs: string[],
       snapshotTyped: string,
-      snapshotWordIndex: number
+      snapshotWordIndex: number,
     ) => {
       if (!startTime || mode === "time") {
         return;
@@ -375,7 +429,7 @@ export function useTypingTest({
       const snapWpm = Math.round(snapNum / 5 / elapsedMin);
       const snapRaw = Math.max(
         Math.round(allTypedRef.current / 5 / elapsedMin),
-        snapWpm
+        snapWpm,
       );
       setWpmHistory((prev) => [
         ...prev,
@@ -388,7 +442,27 @@ export function useTypingTest({
       ]);
       errorsThisSecondRef.current = 0;
     },
-    [startTime, mode, words]
+    [startTime, mode, words],
+  );
+
+  const getLiveWpm = useCallback(
+    (activeInputs: string[], activeTyped: string, activeIndex: number) => {
+      if (!startTime) {
+        return 0;
+      }
+      const elapsed = (Date.now() - startTime) / 1000;
+      const counts = countWpm({
+        targetWords: words,
+        wordInputs: activeInputs,
+        typed: activeTyped,
+        wordIndex: activeIndex,
+        mode,
+        final: false,
+      });
+      const num = wpmNumeratorFromCounts(counts);
+      return Math.round(num / 5 / Math.max(elapsed / 60, 1 / 60));
+    },
+    [startTime, words, mode],
   );
 
   const clearWordOrNavigateBack = useCallback(() => {
@@ -396,6 +470,7 @@ export function useTypingTest({
       setTyped("");
       const cw = words[wordIndex];
       onKeyHighlight?.(cw && cw.length > 0 ? cw[0] : null);
+      setWpm(getLiveWpm(wordInputs, "", wordIndex));
       return;
     }
     if (wordIndex <= 0) {
@@ -405,13 +480,15 @@ export function useTypingTest({
     const prevWord = words[wordIndex - 1];
     setWordIndex((prev) => prev - 1);
     setTyped(prevInput);
-    setWordInputs((prev) => prev.slice(0, -1));
+    const nextInputs = wordInputs.slice(0, -1);
+    setWordInputs(nextInputs);
     if (prevInput.length < prevWord.length) {
       onKeyHighlight?.(prevWord[prevInput.length]);
     } else {
       onKeyHighlight?.(" ");
     }
-  }, [typed, wordIndex, wordInputs, words, onKeyHighlight]);
+    setWpm(getLiveWpm(nextInputs, prevInput, wordIndex - 1));
+  }, [typed, wordIndex, wordInputs, words, onKeyHighlight, getLiveWpm]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -474,7 +551,6 @@ export function useTypingTest({
         return;
       }
 
-      // Don't start the test (or process further) for non-character keys like Shift, Enter, ArrowLeft, etc.
       if (e.key.length > 1 && e.key !== "Backspace") {
         return;
       }
@@ -485,8 +561,6 @@ export function useTypingTest({
         setShowControls(false);
         onTypingActiveChange?.(true);
 
-        // Rule 3: start the countdown timer here in the event handler instead
-        // of reacting to `started` changing in a useEffect.
         if (mode === "time") {
           let elapsedTicks = 0;
           timerRef.current = setInterval(() => {
@@ -501,7 +575,102 @@ export function useTypingTest({
               elapsedMin > 0
                 ? Math.max(
                     Math.round(allTypedRef.current / 5 / elapsedMin),
-                    snapWpm
+                    snapWpm,
+                  )
+                : 0;
+            setWpmHistory((prev) => [
+              ...prev,
+              {
+                second: elapsedTicks,
+                wpm: snapWpm,
+                raw: snapRaw,
+                errors: errorsThisSecondRef.current,
+              },
+            ]);
+            errorsThisSecondRef.current = 0;
+            if (elapsedTicks >= timeOption) {
+              clearInterval(timerRef.current!);
+              timerRef.current = null;
+              finishTestRef.current?.();
+            } else {
+              setTimeLeft(timeOption - elapsedTicks);
+            }
+          }, 1000);
+        }
+      }
+
+      markTypingActive();
+
+      if (e.key === "Backspace") {
+        if (typed.length === 0 && wordIndex > 0) {
+          e.preventDefault();
+          const prevInput = wordInputs[wordIndex - 1];
+          const prevWord = words[wordIndex - 1];
+          setWordIndex((prev) => prev - 1);
+          setTyped(prevInput);
+          const nextInputs = wordInputs.slice(0, -1);
+          setWordInputs(nextInputs);
+          if (prevInput.length < prevWord.length) {
+            onKeyHighlight?.(prevWord[prevInput.length]);
+          } else {
+            onKeyHighlight?.(" ");
+          }
+          setWpm(getLiveWpm(nextInputs, prevInput, wordIndex - 1));
+        }
+        return;
+      }
+    },
+    [
+      finished,
+      started,
+      words,
+      wordIndex,
+      typed,
+      wordInputs,
+      mode,
+      timeOption,
+      resetTest,
+      finishTest,
+      onKeyHighlight,
+      markTypingActive,
+      onTypingActiveChange,
+      clearWordOrNavigateBack,
+      getLiveWpm,
+    ],
+  );
+
+  const handleInputChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (finished) {
+        return;
+      }
+
+      const newValue = e.target.value;
+      if (newValue === typed) {
+        return;
+      }
+
+      if (!started) {
+        setStarted(true);
+        setStartTime(Date.now());
+        setShowControls(false);
+        onTypingActiveChange?.(true);
+
+        if (mode === "time") {
+          let elapsedTicks = 0;
+          timerRef.current = setInterval(() => {
+            elapsedTicks += 1;
+            elapsedSecondsRef.current = elapsedTicks;
+            const elapsedMin = elapsedTicks / 60;
+            const snapWpm =
+              elapsedMin > 0
+                ? Math.round(correctCharsRef.current / 5 / elapsedMin)
+                : 0;
+            const snapRaw =
+              elapsedMin > 0
+                ? Math.max(
+                    Math.round(allTypedRef.current / 5 / elapsedMin),
+                    snapWpm,
                   )
                 : 0;
             setWpmHistory((prev) => [
@@ -529,37 +698,55 @@ export function useTypingTest({
 
       const currentWord = words[wordIndex];
 
-      if (e.key === " ") {
-        e.preventDefault();
-        if (typed.length === 0) {
+      if (newValue.includes(" ")) {
+        const spaceIdx = newValue.indexOf(" ");
+        const wordTyped = newValue.slice(0, spaceIdx);
+
+        if (wordTyped.length === 0 && typed.length === 0) {
+          setTyped("");
+          if (inputRef.current) {
+            inputRef.current.value = "";
+          }
           return;
         }
 
-        allTypedRef.current += 1; // count the space keystroke so raw >= wpm
+        allTypedRef.current += 1;
 
-        for (let i = 0; i < Math.min(typed.length, currentWord.length); i++) {
-          if (typed[i] !== currentWord[i]) {
+        for (
+          let i = 0;
+          i < Math.min(wordTyped.length, currentWord.length);
+          i++
+        ) {
+          if (wordTyped[i] !== currentWord[i]) {
             errorsThisSecondRef.current++;
           }
         }
-        if (typed.length > currentWord.length) {
+        if (wordTyped.length > currentWord.length) {
           errorsThisSecondRef.current++;
         }
 
-        const nextInputs = [...wordInputs, typed];
+        const nextInputs = [...wordInputs, wordTyped];
         const nextIndex = wordIndex + 1;
         recordWordSnapshot(nextInputs, "", nextIndex);
 
-        if (wordIndex + 1 >= words.length) {
+        if (nextIndex >= words.length) {
           setWordInputs(nextInputs);
-          finishTest();
+          setTyped("");
+          if (inputRef.current) {
+            inputRef.current.value = "";
+          }
+          finishTest(nextInputs, wordTyped);
           return;
         }
+
         setWordInputs(nextInputs);
         setWordIndex(nextIndex);
         setTyped("");
+        if (inputRef.current) {
+          inputRef.current.value = "";
+        }
         onKeyHighlight?.(null);
-        // Rule 3: measure DOM row offset after React re-renders the new active word.
+
         requestAnimationFrame(() => {
           if (!activeWordRef.current) {
             return;
@@ -569,90 +756,110 @@ export function useTypingTest({
           const row = Math.round(word.offsetTop / lineH);
           setRowOffset(Math.max(0, row - 1) * lineH);
         });
+
+        const remaining = newValue.slice(spaceIdx + 1);
+        if (remaining.length > 0) {
+          setTyped(remaining);
+          if (inputRef.current) {
+            inputRef.current.value = remaining;
+          }
+          setWpm(getLiveWpm(nextInputs, remaining, nextIndex));
+        } else {
+          setWpm(getLiveWpm(nextInputs, "", nextIndex));
+        }
         return;
       }
 
-      if (e.key === "Backspace") {
-        if (typed.length === 0 && wordIndex > 0) {
-          const prevInput = wordInputs[wordIndex - 1];
-          setWordIndex((prev) => prev - 1);
-          setTyped(prevInput);
-          setWordInputs((prev) => prev.slice(0, -1));
-        } else if (typed.length > 0) {
-          const lastIdx = typed.length - 1;
+      if (newValue.length > typed.length) {
+        const added = newValue.slice(typed.length);
+        let tempTyped = typed;
+
+        for (let i = 0; i < added.length; i++) {
+          const char = added[i];
+          allTypedRef.current += 1;
+
+          const charIndex = tempTyped.length;
+          const isWrong =
+            charIndex >= currentWord.length || char !== currentWord[charIndex];
+          if (isWrong) {
+            onWrongKey?.();
+          }
+
+          tempTyped += char;
+
+          const isLastWord = wordIndex + 1 >= words.length;
+          if (
+            isLastWord &&
+            tempTyped.length >= currentWord.length &&
+            mode !== "time" &&
+            mode !== "zen"
+          ) {
+            for (
+              let j = 0;
+              j < Math.min(tempTyped.length, currentWord.length);
+              j++
+            ) {
+              if (tempTyped[j] !== currentWord[j]) {
+                errorsThisSecondRef.current++;
+              }
+            }
+            if (tempTyped.length > currentWord.length) {
+              errorsThisSecondRef.current++;
+            }
+            const nextInputs = [...wordInputs, tempTyped];
+            setWordInputs(nextInputs);
+            recordWordSnapshot(nextInputs, "", wordIndex + 1);
+            setTyped(tempTyped);
+            finishTest(nextInputs, tempTyped);
+            return;
+          }
+        }
+
+        setTyped(newValue);
+
+        const nextCharIndex = newValue.length;
+        onKeyHighlight?.(
+          nextCharIndex < currentWord.length ? currentWord[nextCharIndex] : " ",
+        );
+        setWpm(getLiveWpm(wordInputs, newValue, wordIndex));
+      } else if (newValue.length < typed.length) {
+        const deletedCount = typed.length - newValue.length;
+        for (let i = 0; i < deletedCount; i++) {
+          const lastIdx = typed.length - 1 - i;
           const isWrong =
             lastIdx >= currentWord.length ||
             typed[lastIdx] !== currentWord[lastIdx];
           if (isWrong) {
             correctedErrorsRef.current += 1;
           }
-          setTyped((prev) => prev.slice(0, -1));
-        }
-        return;
-      }
-
-      if (e.key.length === 1) {
-        allTypedRef.current += 1;
-        const nextTyped = typed + e.key;
-        setTyped(nextTyped);
-
-        const charIndex = typed.length;
-        const isWrong =
-          charIndex >= currentWord.length || e.key !== currentWord[charIndex];
-        if (isWrong) {
-          onWrongKey?.();
         }
 
-        const isLastWord = wordIndex + 1 >= words.length;
-        if (
-          isLastWord &&
-          nextTyped.length >= currentWord.length &&
-          mode !== "time" &&
-          mode !== "zen"
-        ) {
-          for (
-            let i = 0;
-            i < Math.min(nextTyped.length, currentWord.length);
-            i++
-          ) {
-            if (nextTyped[i] !== currentWord[i]) {
-              errorsThisSecondRef.current++;
-            }
-          }
-          if (nextTyped.length > currentWord.length) {
-            errorsThisSecondRef.current++;
-          }
-          const nextInputs = [...wordInputs, nextTyped];
-          setWordInputs(nextInputs);
-          recordWordSnapshot(nextInputs, "", wordIndex + 1);
-          finishTest();
-          return;
-        }
+        setTyped(newValue);
 
-        const nextCharIndex = nextTyped.length;
+        const nextCharIndex = newValue.length;
         onKeyHighlight?.(
-          nextCharIndex < currentWord.length ? currentWord[nextCharIndex] : " "
+          nextCharIndex < currentWord.length ? currentWord[nextCharIndex] : " ",
         );
+        setWpm(getLiveWpm(wordInputs, newValue, wordIndex));
       }
     },
     [
       finished,
       started,
+      typed,
       words,
       wordIndex,
-      typed,
-      wordInputs,
       mode,
       timeOption,
-      resetTest,
+      wordInputs,
+      onWrongKey,
+      recordWordSnapshot,
       finishTest,
       onKeyHighlight,
-      recordWordSnapshot,
       markTypingActive,
       onTypingActiveChange,
-      onWrongKey,
-      clearWordOrNavigateBack,
-    ]
+      getLiveWpm,
+    ],
   );
 
   const handleFocus = () => {
@@ -675,58 +882,6 @@ export function useTypingTest({
     onFocusChange?.(true);
   }, [onFocusChange]);
 
-  // ── Frozen stats (computed inline, not via effect) ────────────────────────
-  const frozenStatsRef = useRef<ResultStats | null>(null);
-
-  if (finished && !frozenStatsRef.current) {
-    const elapsed = startTime
-      ? (Date.now() - startTime) / 1000
-      : elapsedSecondsRef.current;
-    const elapsedMin = elapsed / 60 || 1 / 60;
-    const wpmValues = wpmHistory.map((s) => s.wpm).filter((v) => v > 0);
-    let consistency = 100;
-    if (wpmValues.length > 1) {
-      const mean = wpmValues.reduce((a, b) => a + b, 0) / wpmValues.length;
-      const variance =
-        wpmValues.reduce((a, b) => a + (b - mean) ** 2, 0) / wpmValues.length;
-      consistency = Math.max(
-        0,
-        Math.round(100 - (Math.sqrt(variance) / (mean || 1)) * 100)
-      );
-    }
-    const computedWpm = Math.round(wpmNumerator / 5 / elapsedMin);
-    const computedRaw = Math.max(
-      Math.round(allTypedRef.current / 5 / elapsedMin),
-      computedWpm
-    );
-    frozenStatsRef.current = {
-      wpm: computedWpm,
-      accuracy,
-      raw: computedRaw,
-      correctChars: mtCounts.correctWordChars,
-      incorrectChars: mtCounts.incorrectChars,
-      extraChars: mtCounts.extraChars,
-      missedChars: mtCounts.missedChars,
-      consistency,
-      elapsedSeconds: Math.round(elapsed),
-      correctedErrors: correctedErrorsRef.current,
-      mode,
-      modeDetail:
-        mode === "time"
-          ? String(timeOption)
-          : mode === "words"
-            ? String(wordOption)
-            : mode === "quote"
-              ? quoteLength
-              : "",
-      wpmHistory,
-    };
-  }
-  if (!finished) {
-    frozenStatsRef.current = null;
-  }
-
-  // Resets all typing state but keeps the current word list (for "restart same test").
   const resetSameWords = useCallback(() => {
     setTyped("");
     setWordIndex(0);
@@ -735,6 +890,8 @@ export function useTypingTest({
     setStartTime(null);
     setWordInputs([]);
     setWpmHistory([]);
+    setWpm(0);
+    setFrozenStats(null);
     correctCharsRef.current = 0;
     allTypedRef.current = 0;
     errorsThisSecondRef.current = 0;
@@ -755,7 +912,6 @@ export function useTypingTest({
     inputRef.current?.focus();
   }, [mode, timeOption, onFinished, onTypingActiveChange]);
 
-  // Rule 3: fade results→typing on restart, driven by user action.
   const handleResultsRestart = useCallback(() => {
     setScreenFade(0);
     if (screenFadeRef.current) {
@@ -783,14 +939,13 @@ export function useTypingTest({
     }, 150);
   }, [resetTestImmediate]);
 
-  // ── Option-change handlers (Rule 3) ──────────────────────────────────────
   const onModeChange = useCallback(
     (next: TestMode) => {
       setMode(next);
       localStorage.setItem(TEST_MODE_STORAGE_KEY, next);
       resetTest({ mode: next });
     },
-    [resetTest]
+    [resetTest],
   );
 
   const onTimeOptionChange = useCallback(
@@ -799,7 +954,7 @@ export function useTypingTest({
       localStorage.setItem(TIME_OPTION_STORAGE_KEY, String(next));
       resetTest({ timeOption: next });
     },
-    [resetTest]
+    [resetTest],
   );
 
   const onWordOptionChange = useCallback(
@@ -808,7 +963,7 @@ export function useTypingTest({
       localStorage.setItem(WORD_OPTION_STORAGE_KEY, String(next));
       resetTest({ wordOption: next });
     },
-    [resetTest]
+    [resetTest],
   );
 
   const onQuoteLengthChange = useCallback(
@@ -817,7 +972,7 @@ export function useTypingTest({
       localStorage.setItem(QUOTE_LENGTH_STORAGE_KEY, next);
       resetTest({ quoteLength: next });
     },
-    [resetTest]
+    [resetTest],
   );
 
   const onPunctuationToggle = useCallback(() => {
@@ -845,14 +1000,13 @@ export function useTypingTest({
       }
       resetTest({ difficulty: next });
     },
-    [difficulty, resetTest]
+    [difficulty, resetTest],
   );
 
   const controlsVisible = !started || showControls;
-  const showResults = finished && frozenStatsRef.current;
+  const showResults = finished && !!frozenStats;
 
   return {
-    // State
     mode,
     timeOption,
     wordOption,
@@ -876,16 +1030,14 @@ export function useTypingTest({
     screenFade,
     wpm,
     accuracy,
-    // Computed
     controlsVisible,
     showResults,
-    frozenStats: frozenStatsRef.current,
-    // Refs
+    frozenStats,
     inputRef,
     wordsContainerRef,
     activeWordRef,
-    // Handlers
     handleKeyDown,
+    handleInputChange,
     handleFocus,
     handleInputBlur,
     handleInputFocus,

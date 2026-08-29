@@ -24,7 +24,7 @@ function startFetch(): Promise<ArrayBuffer | null> {
 
 // Start immediately on import
 if (typeof window !== "undefined") {
-  startFetch();
+  void startFetch();
 }
 
 export function getSoundBuffer(): Promise<ArrayBuffer | null> {

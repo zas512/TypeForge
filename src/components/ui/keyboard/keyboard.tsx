@@ -51,7 +51,6 @@ export function Keyboard({
   volume = 0.5,
 }: KeyboardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const layout = QWERTY_LAYOUT;
 
   return (
     <KeyboardProvider
