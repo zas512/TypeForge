@@ -1,21 +1,21 @@
 "use client";
-
+import type { KeyboardThemeName } from "@/components/ui/keyboard";
+import { syncTypeForgeFavicon } from "@/lib/favicon-client";
+import { FONT_OPTIONS, type TypingFont } from "@/lib/font-options";
+import { THEME_OPTIONS } from "@/lib/theme-options";
 import {
   createContext,
   type ReactNode,
   useContext,
   useEffect,
-  useState,
+  useMemo,
+  useState
 } from "react";
-import type { KeyboardThemeName } from "@/components/ui/keyboard";
-import { syncTypeForgeFavicon } from "@/lib/favicon-client";
-import { FONT_OPTIONS, type TypingFont } from "@/lib/font-options";
-import { THEME_OPTIONS } from "@/lib/theme-options";
 
 export {
   FONT_OPTIONS,
   type FontOption,
-  type TypingFont,
+  type TypingFont
 } from "@/lib/font-options";
 export { THEME_OPTIONS } from "@/lib/theme-options";
 
@@ -54,7 +54,7 @@ function loadGoogleFont(family: string) {
 }
 
 function applyAccentToDom(accent: KeyboardThemeName) {
-  document.documentElement.setAttribute("data-accent", accent);
+  document.documentElement.dataset.accent = accent;
   queueMicrotask(() => syncTypeForgeFavicon());
 }
 
@@ -69,7 +69,9 @@ function applyFontToDom(fontId: TypingFont) {
   document.documentElement.style.setProperty("--typing-font", option.cssFamily);
 }
 
-export function SettingsProvider({ children }: { children: ReactNode }) {
+export function SettingsProvider({
+  children
+}: Readonly<{ children: ReactNode }>) {
   const [accent, setAccentState] = useState<KeyboardThemeName>("mint");
   const [font, setFontState] = useState<TypingFont>("geist-mono");
   const [showKeyboard, setShowKeyboardState] = useState(true);
@@ -78,7 +80,7 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const [liveStats, setLiveStatsState] = useState(true);
   const [faahMode, setFaahModeState] = useState(false);
   const [ghostMode, setGhostModeState] = useState(false);
-  // One-time hydration from localStorage on mount
+
   useEffect(() => {
     const validThemes = new Set<string>(THEME_OPTIONS.map((t) => t.id));
     const rawAccent = localStorage.getItem("tc-accent");
@@ -122,11 +124,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
     if (savedGhostMode !== null) {
       setGhostModeState(savedGhostMode === "true");
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Rule 3: setAccent / setFont are event handlers that apply DOM changes
-  // directly instead of relying on a reactive useEffect to "sync" them.
   const setAccent = (c: KeyboardThemeName) => {
     setAccentState(c);
     applyAccentToDom(c);
@@ -172,28 +171,41 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const fontCssFamily =
     FONT_OPTIONS.find((f) => f.id === font)?.cssFamily ?? "var(--font-mono)";
 
+  const value = useMemo<SettingsContextType>(
+    () => ({
+      accent,
+      setAccent,
+      font,
+      setFont,
+      fontCssFamily,
+      showKeyboard,
+      setShowKeyboard,
+      soundEnabled,
+      setSoundEnabled,
+      soundVolume,
+      setSoundVolume,
+      liveStats,
+      setLiveStats,
+      faahMode,
+      setFaahMode,
+      ghostMode,
+      setGhostMode
+    }),
+    [
+      accent,
+      faahMode,
+      font,
+      fontCssFamily,
+      ghostMode,
+      liveStats,
+      showKeyboard,
+      soundEnabled,
+      soundVolume
+    ]
+  );
+
   return (
-    <SettingsContext.Provider
-      value={{
-        accent,
-        setAccent,
-        font,
-        setFont,
-        fontCssFamily,
-        showKeyboard,
-        setShowKeyboard,
-        soundEnabled,
-        setSoundEnabled,
-        soundVolume,
-        setSoundVolume,
-        liveStats,
-        setLiveStats,
-        faahMode,
-        setFaahMode,
-        ghostMode,
-        setGhostMode,
-      }}
-    >
+    <SettingsContext.Provider value={value}>
       {children}
     </SettingsContext.Provider>
   );

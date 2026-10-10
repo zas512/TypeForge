@@ -27,7 +27,7 @@ export default function Page() {
     (active: boolean) => {
       setTypingActive(active);
     },
-    [setTypingActive],
+    [setTypingActive]
   );
 
   return (
@@ -37,7 +37,7 @@ export default function Page() {
           "flex flex-col px-6",
           isFinished
             ? "flex-1 justify-center px-10 py-2"
-            : "flex-1 items-center justify-center",
+            : "flex-1 items-center justify-center"
         )}
       >
         <TypingTest
@@ -49,14 +49,13 @@ export default function Page() {
           pauseTypingInputRefocus={settingsOpen}
         />
       </main>
-
       {!isFinished && (
         <footer
           className={cn(
             "hidden items-center justify-center lg:flex",
             showKeyboard
               ? "flex-col pb-4"
-              : "invisible h-0 overflow-hidden border-0",
+              : "invisible h-0 overflow-hidden border-0"
           )}
         >
           <div className="scale-[0.85]">
@@ -69,27 +68,6 @@ export default function Page() {
               volume={soundVolume}
             />
           </div>
-          <p className="text-muted-foreground/40 text-xs">
-            Built by{" "}
-            <a
-              className="text-muted-foreground/60 underline-offset-2 hover:text-foreground hover:underline"
-              href="https://github.com/zas512"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              zas512
-            </a>
-            . The source code is available on{" "}
-            <a
-              className="text-muted-foreground/60 underline-offset-2 hover:text-foreground hover:underline"
-              href="https://github.com/zas512/typeforge"
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              GitHub
-            </a>
-            .
-          </p>
         </footer>
       )}
     </div>
