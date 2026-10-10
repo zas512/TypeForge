@@ -1,5 +1,7 @@
 "use client";
 
+import { getSoundBuffer } from "@/lib/audio-preloader";
+import type { KeyboardLayout } from "@/lib/keyboard-layouts";
 import {
   createContext,
   type ReactNode,
@@ -8,18 +10,16 @@ import {
   useContext,
   useEffect,
   useRef,
-  useState,
+  useState
 } from "react";
 import { flushSync } from "react-dom";
 import { useWebHaptics } from "web-haptics/react";
-import { getSoundBuffer } from "@/lib/audio-preloader";
-import type { KeyboardLayout } from "@/lib/keyboard-layouts";
 import { SOUND_DEFINES_DOWN, SOUND_DEFINES_UP } from "./sound";
 import type {
   KeyboardEventPhase,
   KeyboardEventSource,
   KeyboardInteractionEvent,
-  KeyboardThemeName,
+  KeyboardThemeName
 } from "./types";
 
 // -----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ export const PHYSICAL_MODIFIER_CODES = new Set<string>([
   "MetaLeft",
   "MetaRight",
   "ShiftLeft",
-  "ShiftRight",
+  "ShiftRight"
 ]);
 
 export function useKeyboardContext() {
@@ -84,8 +84,8 @@ export function KeyboardProvider({
   forceActive = false,
   physicalKeysEnabled = true,
   layout,
-  volume = 0.5,
-}: KeyboardProviderProps) {
+  volume = 0.5
+}: Readonly<KeyboardProviderProps>) {
   const audioContextRef = useRef<AudioContext | null>(null);
   const audioBufferRef = useRef<AudioBuffer | null>(null);
   const pressedKeysRef = useRef<Set<string>>(new Set());
@@ -355,7 +355,7 @@ export function KeyboardProvider({
         triggerPointerHaptic,
         pressKey,
         releaseKey,
-        releaseAllKeys,
+        releaseAllKeys
       }}
     >
       {children}

@@ -2,6 +2,8 @@
 // Public types
 // -----------------------------------------------------------------------------
 
+import { KeyboardLayout } from "@/lib/keyboard-layouts";
+
 export type KeyboardEventSource = "physical" | "pointer";
 export type KeyboardEventPhase = "down" | "up";
 export type KeyboardThemeName =
@@ -24,6 +26,7 @@ export interface KeyboardProps {
   enableSound?: boolean;
   /** Keep key-event listeners active even when the keyboard is not intersecting the viewport */
   forceActive?: boolean;
+  layout?: KeyboardLayout;
   onKeyEvent?: (event: KeyboardInteractionEvent) => void;
   /** When false, physical key presses are ignored (use when the typing area is not focused) */
   physicalKeysEnabled?: boolean;

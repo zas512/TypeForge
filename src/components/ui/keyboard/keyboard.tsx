@@ -1,5 +1,7 @@
 "use client";
 
+import { QWERTY_LAYOUT } from "@/lib/keyboard-layouts";
+import { cn } from "@/lib/utils";
 import {
   IconArrowNarrowLeft,
   IconBrightnessDown,
@@ -20,16 +22,14 @@ import {
   IconSearch,
   IconVolume,
   IconVolume2,
-  IconVolume3,
+  IconVolume3
 } from "@tabler/icons-react";
 import {
   type ReactNode,
   type PointerEvent as ReactPointerEvent,
   useRef,
-  useState,
+  useState
 } from "react";
-import { QWERTY_LAYOUT } from "@/lib/keyboard-layouts";
-import { cn } from "@/lib/utils";
 
 import { KeyboardProvider, useKeyboardContext } from "./context";
 import { KEYBOARD_THEMES, resolveKeyVariant, toRgba } from "./themes";
@@ -49,6 +49,7 @@ export function Keyboard({
   forceActive = false,
   physicalKeysEnabled = true,
   volume = 0.5,
+  layout = QWERTY_LAYOUT
 }: KeyboardProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -317,7 +318,7 @@ function Row({ children }: { children: ReactNode }) {
 function DualKey({
   keyCode,
   labels,
-  width,
+  width
 }: {
   keyCode: KEYCODE;
   labels?: [string, string?];
@@ -405,7 +406,7 @@ function Key({ width = 50, children, className, keyCode }: KeyProps) {
         )}
         style={{
           width: `${width}px`,
-          backgroundColor: toRgba(keyVariant.bg, 0.8),
+          backgroundColor: toRgba(keyVariant.bg, 0.8)
         }}
       >
         <div
@@ -417,7 +418,7 @@ function Key({ width = 50, children, className, keyCode }: KeyProps) {
           style={{
             width: `${width - 13}px`,
             backgroundColor: keyVariant.bg,
-            color: keyVariant.text,
+            color: keyVariant.text
           }}
         >
           {children}
